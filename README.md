@@ -50,8 +50,11 @@ Läufen erhalten, ohne dass eine externe Datenbank nötig ist.
 ## Setup (≈ 10 Minuten)
 
 ### 1. Repo anlegen
-1. Erstelle ein **privates GitHub-Repo** (private wegen E-Mail-Adressen,
-   Free-Tier-Repos haben 2000 Action-Minuten pro Monat – mehr als genug).
+1. Erstelle ein **öffentliches GitHub-Repo**. Public-Repos haben
+   **unbegrenzte** GitHub-Actions-Minuten – ein 5-Min-Takt braucht
+   ~4 300 Min/Monat und passt damit nicht in die 2 000 Min, die private
+   Free-Repos bekommen. Geheimnisse (SMTP-Passwort etc.) liegen
+   verschlüsselt in **GitHub Secrets**, nicht im Repo-Code.
 2. Pushe diesen Ordner als ersten Commit hinein.
 
 ### 2. Gmail-App-Passwort erzeugen
@@ -126,9 +129,17 @@ trotzdem schnell genug. 60 s wäre nur mit einer dauerhaft laufenden VM
 möglich (Oracle Cloud Free, Fly.io o. ä.).
 
 **Wer bezahlt das?**
-Niemand. Private Repos haben 2000 freie Action-Minuten/Monat. Ein
-Lauf dauert ~30 s ⇒ ≈ 4 320 Min/Monat bei 5-Min-Takt. Bei einem
-**öffentlichen Repo** ist GitHub Actions komplett unbegrenzt kostenlos.
+Niemand. Bei einem **öffentlichen Repo** sind GitHub-Actions-Minuten
+**unbegrenzt** kostenlos – darum nutzen wir public. Private Repos auf
+dem Free-Plan haben nur 2 000 Min/Monat; 5-Min-Cron wäre damit nicht
+machbar (~4 300 Min/Monat).
+
+**Wird der Workflow irgendwann automatisch deaktiviert?**
+Ja, GitHub stoppt geplante Workflows nach **60 Tagen ohne Repo-Commit**.
+Solange Termine erscheinen oder verschwinden, schreibt der Workflow von
+selbst Commits → kein Problem. Falls 60 Tage gar nichts passiert, kommt
+eine Warn-Mail von GitHub – dann den Workflow einfach einmal manuell
+auslösen.
 
 **Was passiert, wenn die Website kurzzeitig down ist?**
 Der Lauf endet mit Exit-Code 1, es wird nichts gespeichert und nichts
