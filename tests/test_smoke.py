@@ -1,4 +1,10 @@
-"""Minimale Smoke-Tests, die ohne Internet/SMTP laufen."""
+"""Minimale Smoke-Tests, die ohne Internet/SMTP laufen.
+
+Sie validieren das Verhalten des Parsers gegen die echte Shopware-Struktur
+von shop.interpersonal.aero (Form#productDetailPageBuyProductForm) sowie
+die Persistenz-Logik in storage.py.
+"""
+
 from __future__ import annotations
 
 import sqlite3
@@ -8,31 +14,97 @@ from src.scraper import parse_appointments
 from src.storage import Appointment, filter_new, init_db, upsert_all
 
 
-SAMPLE_HTML = """
-<html><head><title>Ab Initio Termine</title></head>
-<body>
-  <div class="appointment">
-    <h3 class="title">Theorieprüfung Ab Initio</h3>
-    <span class="date">12.05.2026 09:00</span>
-    <span class="location">Frankfurt</span>
-    <a href="/buchen/123">Buchen</a>
-  </div>
-  <div class="appointment">
-    <h3 class="title">Theorieprüfung Ab Initio</h3>
-    <span class="date">19.05.2026 09:00</span>
-    <span class="location">München</span>
-    <a href="/buchen/124">Buchen</a>
-  </div>
+# ---------------------------------------------------------------------------
+# HTML-Fixtures, die die echte Shop-Struktur nachbilden
+# ---------------------------------------------------------------------------
+
+JSONLD_HEAD = """\
+<!doctype html>
+<html><head>
+  <title>BQ ip Ab-Initio | BQI10020</title>
+  <script type="application/ld+json">
+  [{
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": "Basic Qualification ip Ab-Initio",
+    "startDate": "2026-05-06T09:00",
+    "location": {"name": "Interpersonal", "address": "Hamburg, Germany"}
+  }]
+  </script>
+</head><body>
+"""
+
+FORM_OPEN = """\
+<form id="productDetailPageBuyProductForm" action="/de/checkout/line-item/add"
+      method="post" class="buy-widget" data-add-to-cart="true">
+  <ul class="list-group mt-2 mb-3" style="max-height: 23rem; overflow-y: auto">
+"""
+
+FORM_CLOSE = """\
+  </ul>
+</form>
 </body></html>
 """
 
+NO_SLOTS_BADGE = (
+    '<span class="badge bg-warning mb-3">'
+    'Momentan gibt es keine Termine für dieses Event.</span>'
+)
 
-def test_parse_finds_two_appointments():
-    items = parse_appointments(SAMPLE_HTML, base_url="https://example.com/")
+WITH_SLOTS = """\
+    <li class="list-group-item" onclick="reloadPageWithSlot(4711)">
+      06.05.2026 09:00 – 17:00 Uhr · Hamburg
+    </li>
+    <li class="list-group-item" onclick="reloadPageWithSlot(4815)">
+      11.05.2026 09:00 (Restplätze)
+    </li>
+"""
+
+HTML_NO_SLOTS = JSONLD_HEAD + FORM_OPEN + FORM_CLOSE + NO_SLOTS_BADGE
+HTML_WITH_SLOTS = JSONLD_HEAD + FORM_OPEN + WITH_SLOTS + FORM_CLOSE
+
+
+BASE_URL = "https://shop.interpersonal.aero/de/BQ-ip-Ab-Initio/BQI10020"
+
+
+# ---------------------------------------------------------------------------
+# Parser-Tests
+# ---------------------------------------------------------------------------
+
+def test_parser_returns_empty_when_no_slots():
+    """Aktuelle Live-Situation: leere Liste, 'keine Termine'-Badge sichtbar."""
+    items = parse_appointments(HTML_NO_SLOTS, base_url=BASE_URL)
+    assert items == []
+
+
+def test_parser_extracts_slots_with_id_and_url():
+    """Wenn Slots da sind: Datum, slotId-URL und Title aus JSON-LD."""
+    items = parse_appointments(HTML_WITH_SLOTS, base_url=BASE_URL)
     assert len(items) == 2
-    assert items[0].title.startswith("Theorieprüfung")
-    assert items[0].url.startswith("https://example.com/")
 
+    a = items[0]
+    assert a.title == "Basic Qualification ip Ab-Initio"
+    assert a.date == "06.05.2026 09:00"
+    assert a.url == f"{BASE_URL}?slotId=4711"
+    assert "Hamburg" in a.location
+
+    b = items[1]
+    assert b.date == "11.05.2026 09:00"
+    assert b.url.endswith("?slotId=4815")
+
+
+def test_parser_dedupes_identical_li():
+    """Mehrere LIs mit gleicher slotId/Datum dürfen nur einmal vorkommen."""
+    duplicate_html = (
+        JSONLD_HEAD + FORM_OPEN + WITH_SLOTS + WITH_SLOTS + FORM_CLOSE
+    )
+    items = parse_appointments(duplicate_html, base_url=BASE_URL)
+    assert len(items) == 2  # nicht 4
+
+
+# ---------------------------------------------------------------------------
+# Storage-Tests
+# ---------------------------------------------------------------------------
 
 def test_filter_new_and_upsert(tmp_path: Path):
     db = tmp_path / "test.sqlite"
@@ -44,7 +116,7 @@ def test_filter_new_and_upsert(tmp_path: Path):
     assert filter_new(db, [a, b]) == [a, b]
     upsert_all(db, [a, b])
 
-    # Beim zweiten Lauf darf nichts mehr "neu" sein.
+    # Beim zweiten Lauf darf nichts mehr „neu" sein.
     assert filter_new(db, [a, b]) == []
 
     # Aber ein dritter Termin muss als neu erkannt werden.

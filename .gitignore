@@ -17,5 +17,9 @@ Thumbs.db
 # Logs
 *.log
 
+# Lokale Debug-Snapshots der Zielseite
+last_page.html
+data/last_page.html
+
 # WICHTIG: data/appointments.sqlite NICHT ignorieren – die DB muss
 # im Repo bleiben, damit GitHub Actions zwischen Läufen den Stand kennt.
