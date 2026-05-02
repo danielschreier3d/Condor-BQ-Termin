@@ -1,4 +1,4 @@
-"""Termin-Monitor – modulare Python-Anwendung zur Überwachung
+"""CondorWatch – modulare Python-Anwendung zur Überwachung
 neuer Termin-Slots auf einer Website mit E-Mail-Benachrichtigung.
 
 Module:

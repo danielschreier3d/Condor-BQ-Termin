@@ -43,7 +43,7 @@ def send_new_appointments_email(
         log.info("Keine neuen Termine – keine E-Mail nötig.")
         return
 
-    subject = f"[Termin-Monitor] {len(items)} neue(r) Termin(e) verfügbar"
+    subject = f"[CondorWatch] {len(items)} neue(r) Termin(e) verfügbar"
     plain, html = _render_bodies(items, target_url)
 
     msg = EmailMessage()

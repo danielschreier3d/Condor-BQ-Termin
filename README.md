@@ -1,4 +1,4 @@
-# Termin-Monitor – Interpersonal BQ
+# CondorWatch – Termin-Monitor für Interpersonal BQ
 
 Überwacht eine Buchungsseite auf neue Termin-Slots und sendet bei jedem
 neuen Termin eine E-Mail. Läuft **vollständig kostenlos auf GitHub Actions**
@@ -58,7 +58,7 @@ Läufen erhalten, ohne dass eine externe Datenbank nötig ist.
 1. Aktiviere **2-Faktor-Authentifizierung** auf deinem Google-Konto
    (Pflicht für App-Passwörter).
 2. Öffne https://myaccount.google.com/apppasswords
-3. Erzeuge ein neues App-Passwort namens „Termin-Monitor". Du bekommst
+3. Erzeuge ein neues App-Passwort namens „CondorWatch". Du bekommst
    einen **16-stelligen** Code – kopiere ihn (er wird nur einmal gezeigt).
 
 ### 3. GitHub-Repo-Secrets setzen
@@ -83,7 +83,7 @@ Optional (`Settings → Secrets and variables → Actions → Variables`):
 | `LOG_LEVEL` | `DEBUG` für mehr Logs                               |
 
 ### 4. Workflow zum ersten Mal triggern
-- `Actions` → **Termin-Monitor** → **Run workflow** (manuell starten,
+- `Actions` → **CondorWatch** → **Run workflow** (manuell starten,
   damit du nicht 5 Min warten musst).
 - Im Log siehst du, wie viele Termine die Default-Heuristik findet.
 
@@ -141,4 +141,4 @@ desselben Fingerprints **nicht** erneut gemeldet (der Eintrag bleibt in
 der DB). Wenn du das wünschst, lässt sich `filter_new` leicht anpassen.
 
 **Wie deaktiviere ich das Tool kurz?**
-`Actions → Termin-Monitor → ⋯ → Disable workflow`
+`Actions → CondorWatch → ⋯ → Disable workflow`

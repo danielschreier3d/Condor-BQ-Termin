@@ -71,8 +71,8 @@ class Settings:
             target_url=_require("TARGET_URL"),
             user_agent=os.environ.get(
                 "USER_AGENT",
-                "Mozilla/5.0 (compatible; TerminMonitor/1.0; "
-                "+https://github.com/yourname/termin-monitor)",
+                "Mozilla/5.0 (compatible; CondorWatch/1.0; "
+                "+https://github.com/danielschreier3d/Condor-BQ-Termin)",
             ),
             request_timeout_s=int(os.environ.get("REQUEST_TIMEOUT_S", "30")),
             smtp_host=os.environ.get("SMTP_HOST", "smtp.gmail.com"),

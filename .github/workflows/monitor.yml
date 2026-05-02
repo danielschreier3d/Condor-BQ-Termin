@@ -1,4 +1,4 @@
-name: Termin-Monitor
+name: CondorWatch
 
 # Läuft alle 5 Minuten (Minimum für GitHub Actions). Außerdem manuell
 # auslösbar über die Actions-UI ("workflow_dispatch").
@@ -14,7 +14,7 @@ permissions:
 
 # Nur ein Lauf gleichzeitig – verhindert Push-Konflikte beim DB-Commit.
 concurrency:
-  group: termin-monitor
+  group: condorwatch
   cancel-in-progress: false
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # Wir brauchen den vollen Verlauf, um sauber pushen zu können.
           fetch-depth: 0
@@ -32,7 +32,7 @@ jobs:
           persist-credentials: true
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: "pip"
@@ -59,8 +59,8 @@ jobs:
       - name: Persist SQLite database
         # Nur committen, wenn sich tatsächlich etwas geändert hat.
         run: |
-          git config user.name  "termin-monitor-bot"
-          git config user.email "termin-monitor-bot@users.noreply.github.com"
+          git config user.name  "condorwatch-bot"
+          git config user.email "condorwatch-bot@users.noreply.github.com"
           git add data/appointments.sqlite || true
           if git diff --cached --quiet; then
             echo "Keine DB-Änderungen zu committen."

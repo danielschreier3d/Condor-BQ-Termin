@@ -1,0 +1,43 @@
+name: Debug Fetch (HTML-Snapshot)
+
+# Manuell triggerbarer Workflow. Lädt die Zielseite, gibt Statistiken aus
+# und stellt das vollständige HTML als Artifact bereit.
+on:
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Fetch & analyze target page
+        env:
+          TARGET_URL:    ${{ secrets.TARGET_URL }}
+          # Dummy-SMTP-Werte, damit Settings.from_env nicht meckert
+          SMTP_USER:     "debug@example.com"
+          SMTP_PASSWORD: "debug"
+          NOTIFY_TO:     "debug@example.com"
+        run: python -m src.debug_fetch
+
+      - name: Upload HTML as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: target-page-html
+          path: data/last_page.html
+          retention-days: 7
+          if-no-files-found: error

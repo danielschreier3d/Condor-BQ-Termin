@@ -40,7 +40,7 @@ def run() -> int:
         return 2
 
     _configure_logging(settings.log_level)
-    log = logging.getLogger("termin-monitor")
+    log = logging.getLogger("condorwatch")
 
     log.info("Starte Lauf für %s", settings.target_url)
     init_db(settings.db_path)
