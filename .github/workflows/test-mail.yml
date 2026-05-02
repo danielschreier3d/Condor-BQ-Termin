@@ -1,0 +1,42 @@
+name: Test-Mail (manuell)
+
+# Einmalig manuell auslösbar. Schickt eine echte Test-E-Mail über die
+# konfigurierten SMTP-Secrets, damit man Gmail-Login & Zustellung
+# verifizieren kann, ohne auf einen echten Slot zu warten.
+on:
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Send test email
+        env:
+          # SMTP-Secrets wie im Hauptworkflow
+          TARGET_URL:    ${{ secrets.TARGET_URL }}
+          SMTP_HOST:     ${{ secrets.SMTP_HOST }}
+          SMTP_PORT:     ${{ secrets.SMTP_PORT }}
+          SMTP_USE_TLS:  ${{ secrets.SMTP_USE_TLS }}
+          SMTP_USER:     ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          NOTIFY_FROM:   ${{ secrets.NOTIFY_FROM }}
+          NOTIFY_TO:     ${{ secrets.NOTIFY_TO }}
+          # DRY_RUN explizit aus, auch wenn die Variable im Repo true ist:
+          DRY_RUN:       "false"
+        run: python -m src.test_notify
