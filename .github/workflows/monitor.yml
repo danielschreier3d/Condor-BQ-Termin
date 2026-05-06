@@ -4,7 +4,14 @@ name: CondorWatch
 # auslösbar über die Actions-UI ("workflow_dispatch").
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    # Vier parallele Schedules in 5-Min-Versatz, jeweils bewusst NICHT auf
+    # Minute 0/5/10/… (dort ist die GitHub-Actions-Last am höchsten und
+    # geplante Läufe werden oft verworfen). So haben wir vier Chancen pro
+    # 5-Min-Fenster, dass mindestens einer durchgeht.
+    - cron: "2,17,32,47 * * * *"
+    - cron: "7,22,37,52 * * * *"
+    - cron: "12,27,42,57 * * * *"
+    - cron: "3,18,33,48 * * * *"
   workflow_dispatch:
 
 # Wir brauchen Schreibrechte, damit der Job die aktualisierte SQLite-DB
